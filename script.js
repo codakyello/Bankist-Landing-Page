@@ -13,6 +13,8 @@ const tabBtns = document.querySelectorAll('.operations__tab');
 const tabContents = document.querySelectorAll('.operations__content');
 const section1 = document.querySelector('#section--1');
 const navLinks = document.querySelector('.nav__links');
+const sliders = document.querySelectorAll('.slide');
+const dotsParent = document.querySelector('.dots');
 
 const openModal = function () {
   modal.classList.remove('hidden');
@@ -113,4 +115,117 @@ navLinks.addEventListener('mouseout', e => {
   document
     .querySelectorAll('.nav__link')
     .forEach(nav => (nav.style.opacity = '1'));
+});
+
+// Lets make the slider work
+// The default will 1st slider will be 0 second will be 100, 3rd will be 200
+// When will click right remove 100 to each of them
+// When will click left add 100 from each of them: check if the first item is at 0% meaning there is no longer any item at its left then go back to the last item. (-200, -100, 0)
+// When clicking right check if the last item has 0% transform meaning that its the last item then go back to default (0, 100, 200)
+
+// Create dots according to the number of slides
+sliders.forEach((_, index) => {
+  const dot = document.createElement('div');
+  dot.classList.add('dots__dot');
+  dotsParent.append(dot);
+});
+
+//Get all dots after creating
+const dots = document.querySelectorAll('.dots__dot');
+
+const addActive = () => {
+  dots.forEach(dot => {
+    dot.classList.remove('dots__dot--active');
+  });
+  sliders.forEach((slider, index) => {
+    if (slider.dataset.pos === '0') {
+      dots[index].classList.add('dots__dot--active');
+    }
+  });
+};
+
+// Default start position of slider
+const sliderToBegin = () => {
+  sliders.forEach((slider, index) => {
+    slider.dataset.pos = index * 100;
+    slider.style.transform = `translateX(${index * 100}%)`;
+  });
+};
+
+sliderToBegin();
+addActive();
+
+// Slider to go to end when nothing at back of the first slider
+const sliderToEnd = () => {
+  const slidersClone = [...sliders];
+  slidersClone.reverse().forEach((slider, index) => {
+    slider.dataset.pos = index * -100;
+    slider.style.transform = `translateX(${slider.dataset.pos}%)`;
+  });
+};
+
+// Move slider back or front
+const moveSlider = move => {
+  if (move === 'front') move = -100;
+  else move = 100;
+  sliders.forEach(slider => {
+    slider.dataset.pos = Number(slider.dataset.pos) + move;
+    slider.style.transform = `translateX(${slider.dataset.pos}%)`;
+  });
+};
+
+// Now implement even listeners on the buttons
+
+document.querySelector('.slider').addEventListener('click', e => {
+  const clicked = e.target.classList.contains('slider__btn');
+  if (!clicked) return;
+  // Differentiate if its left or right clicks
+  if (e.target.classList.contains('slider__btn--right')) {
+    if (sliders[sliders.length - 1].dataset.pos !== '0') {
+      moveSlider('front');
+    } else {
+      sliderToBegin();
+    }
+  } else {
+    if (sliders[0].dataset.pos === '0') {
+      sliderToEnd();
+    } else {
+      moveSlider('back');
+    }
+  }
+  addActive();
+});
+
+// Check for the index of the data set of o
+// Match it with the index of the dot and put player--active on it
+
+// Get current active index if target is less than index go backwards
+// Else if target is greater than index go forward
+
+dotsParent.addEventListener('click', e => {
+  const clicked = e.target.classList.contains('dots__dot');
+  if (!clicked) return;
+  let activeIndex = '';
+  let gotoIndex = '';
+  dots.forEach((dot, index) => {
+    if (dot.classList.contains('dots__dot--active')) {
+      activeIndex = index;
+    }
+    if (e.target === dot) {
+      gotoIndex = index;
+    }
+  });
+
+  const diffIndex = Math.abs(activeIndex - gotoIndex);
+  if (gotoIndex < activeIndex) {
+    for (let i = 0; i < diffIndex; i++) {
+      moveSlider('back');
+    }
+  }
+  if (gotoIndex > activeIndex) {
+    for (let i = 0; i < diffIndex; i++) {
+      moveSlider('front');
+    }
+  }
+  addActive();
 });
