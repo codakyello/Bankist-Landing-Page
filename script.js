@@ -15,6 +15,8 @@ const section1 = document.querySelector('#section--1');
 const navLinks = document.querySelector('.nav__links');
 const sliders = document.querySelectorAll('.slide');
 const dotsParent = document.querySelector('.dots');
+const header = document.querySelector('.header');
+const sections = document.querySelectorAll('.section');
 
 const openModal = function () {
   modal.classList.remove('hidden');
@@ -89,14 +91,49 @@ tabContainer.addEventListener('click', e => {
 
 // To implement sticky header
 // When the section is at top of the page - height of the nav
-
-window.onscroll = () => {
-  if (section1.getBoundingClientRect().top - nav.offsetHeight < 1) {
-    nav.classList.add('sticky');
-  } else {
-    nav.classList.remove('sticky');
-  }
+// Not good for performance since it calls a call back on every scroll of the page
+// window.onscroll = () => {
+//   if (
+//     section1.getBoundingClientRect().top - nav.getBoundingClientRect().height <
+//     1
+//   ) {
+//     nav.classList.add('sticky');
+//   } else {
+//     nav.classList.remove('sticky');
+//   }
+// };
+const obsCallback = function (entries, observer) {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) {
+      nav.classList.add('sticky');
+    } else {
+      nav.classList.remove('sticky');
+    }
+  });
 };
+const headerObs = new IntersectionObserver(obsCallback, {
+  root: null,
+  threshold: 0,
+  rootMargin: `-${nav.getBoundingClientRect().height}px`,
+});
+headerObs.observe(header);
+
+const sectionObs = new IntersectionObserver(
+  entries => {
+    const [entry] = entries;
+    if (!entry.isIntersecting) return;
+    entry.target.classList.remove('section--hidden');
+    sectionObs.unobserve(entry.target);
+  },
+  {
+    root: null,
+    threshold: 0.15,
+  }
+);
+sections.forEach(section => {
+  sectionObs.observe(section);
+  section.classList.add('section--hidden');
+});
 
 // Menu fade animation
 navLinks.addEventListener('mouseover', function (e) {
@@ -144,7 +181,7 @@ const addActive = () => {
   });
 };
 
-// Default start position of slider
+// Default start position of sliders
 const sliderToBegin = () => {
   sliders.forEach((slider, index) => {
     slider.dataset.pos = index * 100;
@@ -174,8 +211,7 @@ const moveSlider = move => {
   });
 };
 
-// Now implement even listeners on the buttons
-
+// Now implement event listeners on the dots
 document.querySelector('.slider').addEventListener('click', e => {
   const clicked = e.target.classList.contains('slider__btn');
   if (!clicked) return;
@@ -196,9 +232,8 @@ document.querySelector('.slider').addEventListener('click', e => {
   addActive();
 });
 
-// Check for the index of the data set of o
+// Check for the index of the data set of O
 // Match it with the index of the dot and put player--active on it
-
 // Get current active index if target is less than index go backwards
 // Else if target is greater than index go forward
 
