@@ -154,6 +154,27 @@ navLinks.addEventListener('mouseout', e => {
     .forEach(nav => (nav.style.opacity = '1'));
 });
 
+// Lazy loading images
+const imgTargets = document.querySelectorAll('img[data-src]');
+
+const loading = entries => {
+  const [entry] = entries;
+  if (entry.target.classList.contains('features__img--1')) console.log(entry);
+  if (!entry.isIntersecting) return;
+  entry.target.src = entry.target.dataset.src;
+  entry.target.addEventListener('load', () =>
+    entry.target.classList.remove('lazy-img')
+  );
+  imgOberver.unobserve(entry.target);
+};
+
+const imgOberver = new IntersectionObserver(loading, {
+  root: null,
+  threshold: 1,
+});
+
+imgTargets.forEach(img => imgOberver.observe(img));
+
 // Lets make the slider work
 // The default will 1st slider will be 0 second will be 100, 3rd will be 200
 // When will click right remove 100 to each of them
@@ -174,6 +195,7 @@ const addActive = () => {
   dots.forEach(dot => {
     dot.classList.remove('dots__dot--active');
   });
+
   sliders.forEach((slider, index) => {
     if (slider.dataset.pos === '0') {
       dots[index].classList.add('dots__dot--active');
@@ -202,13 +224,28 @@ const sliderToEnd = () => {
 };
 
 // Move slider back or front
-const moveSlider = move => {
-  if (move === 'front') move = -100;
-  else move = 100;
+const moveslide = move => {
+  move = move === 1 ? -100 : 100;
   sliders.forEach(slider => {
     slider.dataset.pos = Number(slider.dataset.pos) + move;
     slider.style.transform = `translateX(${slider.dataset.pos}%)`;
   });
+};
+
+const nextSlide = () => {
+  if (sliders[sliders.length - 1].dataset.pos !== '0') {
+    moveslide(1);
+  } else {
+    sliderToBegin();
+  }
+};
+
+const preSlide = () => {
+  if (sliders[0].dataset.pos !== '0') {
+    moveslide(0);
+  } else {
+    sliderToEnd();
+  }
 };
 
 // Now implement event listeners on the dots
@@ -217,21 +254,22 @@ document.querySelector('.slider').addEventListener('click', e => {
   if (!clicked) return;
   // Differentiate if its left or right clicks
   if (e.target.classList.contains('slider__btn--right')) {
-    if (sliders[sliders.length - 1].dataset.pos !== '0') {
-      moveSlider('front');
-    } else {
-      sliderToBegin();
-    }
+    nextSlide();
   } else {
-    if (sliders[0].dataset.pos === '0') {
-      sliderToEnd();
-    } else {
-      moveSlider('back');
-    }
+    preSlide();
   }
   addActive();
 });
 
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') nextSlide();
+
+  if (e.key === 'ArrowLeft') preSlide();
+
+  // Go to next slide
+
+  addActive();
+});
 // Check for the index of the data set of O
 // Match it with the index of the dot and put player--active on it
 // Get current active index if target is less than index go backwards
@@ -254,12 +292,12 @@ dotsParent.addEventListener('click', e => {
   const diffIndex = Math.abs(activeIndex - gotoIndex);
   if (gotoIndex < activeIndex) {
     for (let i = 0; i < diffIndex; i++) {
-      moveSlider('back');
+      moveslide(0);
     }
   }
   if (gotoIndex > activeIndex) {
     for (let i = 0; i < diffIndex; i++) {
-      moveSlider('front');
+      moveslide(1);
     }
   }
   addActive();
