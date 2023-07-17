@@ -7,7 +7,7 @@ const modal = document.querySelector('.modal');
 const overlay = document.querySelector('.overlay');
 const btnCloseModal = document.querySelector('.btn--close-modal');
 const btnsOpenModal = document.querySelectorAll('.btn--show-modal');
-const nav = document.querySelector('.nav');
+const nav = document.querySelector('.header__nav');
 const tabContainer = document.querySelector('.operations__tab-container');
 const tabBtns = document.querySelectorAll('.operations__tab');
 const tabContents = document.querySelectorAll('.operations__content');
@@ -17,6 +17,7 @@ const sliders = document.querySelectorAll('.slide');
 const dotsParent = document.querySelector('.dots');
 const header = document.querySelector('.header');
 const sections = document.querySelectorAll('.section');
+const headerNav = document.querySelector('.header__nav');
 
 const openModal = function () {
   modal.classList.remove('hidden');
@@ -66,6 +67,8 @@ document.querySelector('.btn--scroll-to').addEventListener('click', e => {
 
 navLinks.addEventListener('click', e => {
   e.preventDefault();
+  headerNav.classList.remove('open');
+
   if (!e.target.classList.contains('nav__link')) return;
   if (e.target.getAttribute('href') === '#') return;
   const scrollId = e.target.getAttribute('href');
@@ -105,9 +108,9 @@ tabContainer.addEventListener('click', e => {
 const obsCallback = function (entries, observer) {
   entries.forEach(entry => {
     if (!entry.isIntersecting) {
-      nav.classList.add('sticky');
+      nav.classList.add('sticky', 'pad');
     } else {
-      nav.classList.remove('sticky');
+      nav.classList.remove('sticky', 'pad');
     }
   });
 };
@@ -301,4 +304,9 @@ dotsParent.addEventListener('click', e => {
     }
   }
   addActive();
+});
+
+// Mobile Nav
+document.querySelector('.btn-mobile-nav').addEventListener('click', e => {
+  headerNav.classList.toggle('open');
 });
