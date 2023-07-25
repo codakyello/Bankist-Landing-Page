@@ -77,6 +77,10 @@ h5 {
   line-height: 1.5;
 }
 
+.operations__header {
+  margin-bottom: 0.8rem;
+}
+
 .btn {
   display: inline-block;
   background-color: var(--color-primary);
